@@ -15,15 +15,11 @@ RUN npm install
 # Make sure that the .dockerignore file excludes unnecessary files
 COPY . .
 
-
 # Creates a "dist" folder with the production build
 RUN npm run build
 
 # Expose port 3000 for the server
 EXPOSE 3000
-
-# Create a Docker volume for the "data" folder
-VOLUME /usr/src/app/data
 
 # Start the server using the production build
 CMD [ "node", "dist/main.js" ]

@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  app:
+    command: ["yarn", "start:dev"]
+    volumes:
+      - .:/usr/src/app
+      # Overriding node_modules volume to avoid host node_modules overlaying container ones
+      - /usr/src/app/node_modules
+    ports:
+      - "9229:9229"

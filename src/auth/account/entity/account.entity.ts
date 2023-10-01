@@ -7,7 +7,7 @@ export class Account {
   id: number;
 
   @Column()
-  username: string;
+  email: string;
 
   @Column()
   password: string;

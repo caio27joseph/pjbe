@@ -50,7 +50,7 @@ describe('AuthService', () => {
       // Mock bcrypt to return true indicating password match
       jest.spyOn(bcrypt, 'compareSync').mockReturnValueOnce(true as any);
 
-      const result = await service.validateUser('testuser', 'testpassword');
+      const result = await service.validateAccount('testuser', 'testpassword');
       expect(result).toBeDefined();
       expect(result.username).toBe('testuser');
     });
@@ -62,7 +62,7 @@ describe('AuthService', () => {
       // Mock bcrypt to return false indicating password mismatch
       jest.spyOn(bcrypt, 'compareSync').mockReturnValueOnce(false as any);
 
-      const result = await service.validateUser('testuser', 'wrongpassword');
+      const result = await service.validateAccount('testuser', 'wrongpassword');
       expect(result).toBeNull();
     });
   });

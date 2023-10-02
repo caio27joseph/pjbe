@@ -9,10 +9,11 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { Account } from './account/entity/account.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
+import { User } from 'src/users/user/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account]),
+    TypeOrmModule.forFeature([Account, User]),
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
@@ -20,7 +21,7 @@ import { AuthController } from './auth.controller';
     }),
     AccountModule,
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, ConsoleLogger],
+  providers: [LocalStrategy, AuthService, JwtStrategy, ConsoleLogger],
   exports: [AuthService],
   controllers: [AuthController],
 })

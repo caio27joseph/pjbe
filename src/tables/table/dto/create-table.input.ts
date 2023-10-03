@@ -1,18 +1,33 @@
 import { InputType, Int, Field, ID } from '@nestjs/graphql';
-import { IsUrl, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsUrl,
+  Length,
+  MaxLength,
+} from 'class-validator';
 
 @InputType()
 export class CreateTableInput {
-  @Field()
-  @MaxLength(100)
+  @Field({
+    nullable: true,
+  })
+  @Length(3, 100)
   title: string;
 
-  @Field()
-  @MaxLength(255)
+  @Field({
+    nullable: true,
+  })
+  @MaxLength(1000)
   @IsUrl()
-  imageUrl: string;
+  @IsOptional()
+  imageUrl?: string;
 
-  @Field()
-  @MaxLength(2000)
-  description: string;
+  @Field({
+    nullable: true,
+  })
+  @Length(3, 2000)
+  @IsNotEmpty()
+  @IsOptional()
+  description?: string;
 }

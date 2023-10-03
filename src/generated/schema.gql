@@ -5,8 +5,8 @@
 type Table {
   id: String!
   title: String!
-  imageUrl: String!
-  description: String!
+  imageUrl: String
+  description: String
   ownerId: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -24,15 +24,24 @@ type User {
 
 type Query {
   myTables: [Table!]!
+  findTable(id: ID!): Table!
   user(id: Int!): User!
 }
 
 type Mutation {
-  createTable(where: CreateTableInput!): Table!
+  createTable(input: CreateTableInput!): Table!
+  updateTable(id: ID!, input: UpdateTableInput!): Table!
+  removeTable(id: ID!): Table!
 }
 
 input CreateTableInput {
-  title: String!
-  imageUrl: String!
-  description: String!
+  title: String
+  imageUrl: String
+  description: String
+}
+
+input UpdateTableInput {
+  title: String
+  imageUrl: String
+  description: String
 }

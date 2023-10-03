@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -22,14 +23,20 @@ export class Table {
     length: 100,
   })
   title: string;
-  @Field()
-  @Column({
-    length: 255,
+  @Field({
+    nullable: true,
   })
-  imageUrl: string;
-  @Field()
   @Column({
     type: 'text',
+    nullable: true,
+  })
+  imageUrl: string;
+  @Field({
+    nullable: true,
+  })
+  @Column({
+    type: 'text',
+    nullable: true,
   })
   description: string;
 

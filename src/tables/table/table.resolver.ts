@@ -11,37 +11,34 @@ import { TableService } from './table.service';
 import { Table } from './entities/table.entity';
 import { CreateTableInput } from './dto/create-table.input';
 import { UpdateTableInput } from './dto/update-table.input';
-import { UseGuards, Request } from '@nestjs/common';
+import {
+  UseGuards,
+  Request,
+  NotFoundException,
+  HttpException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/users/user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GqlAuthGuard } from 'src/auth/guards/gql-jwt.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+// entity-not-found-graphql.error.ts
 
-@Resolver('table')
+import { GraphQLError } from 'graphql';
+
+@UseGuards(GqlAuthGuard)
+@Resolver(() => Table)
 export class TableResolver {
   constructor(
     @InjectRepository(Table)
     private readonly repo: Repository<Table>,
   ) {}
 
-  @UseGuards(GqlAuthGuard)
-  @Mutation(() => Table)
-  createTable(
-    @CurrentUser() user: User,
-    @Args('where') where: CreateTableInput,
-  ) {
-    const table = this.repo.create({
-      ...where,
-      owner: user,
-    });
-    return this.repo.save(table);
-  }
-
-  @UseGuards(GqlAuthGuard)
-  @Query(() => [Table])
-  myTables(@CurrentUser() user: User) {
+  @Query(() => [Table], {
+    name: 'myTables',
+  })
+  findMyTables(@CurrentUser() user: User) {
     return this.repo.findBy({
       owner: {
         id: user.id,
@@ -49,13 +46,56 @@ export class TableResolver {
     });
   }
 
-  // @Mutation(() => Table)
-  // updateTable(@Args('updateTableInput') updateTableInput: UpdateTableInput) {
-  //   return this.tableService.update(updateTableInput.id, updateTableInput);
-  // }
+  @Query(() => Table, {
+    name: 'findTable',
+  })
+  async findOne(
+    @CurrentUser() user: User,
+    @Args('id', { type: () => ID }) id: string,
+  ) {
+    return await this.repo.findOneByOrFail({ id });
+  }
 
-  // @Mutation(() => Table)
-  // removeTable(@Args('id', { type: () => Int }) id: number) {
-  //   return this.tableService.remove(id);
-  // }
+  @Mutation(() => Table)
+  createTable(
+    @CurrentUser() user: User,
+    @Args('input') input: CreateTableInput,
+  ) {
+    const table = this.repo.create({
+      ...input,
+      owner: user,
+    });
+    return this.repo.save(table);
+  }
+
+  @Mutation(() => Table)
+  async updateTable(
+    @CurrentUser() user: User,
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') input: UpdateTableInput,
+  ) {
+    const table = await this.repo.findOneByOrFail({
+      id: id,
+      ownerId: user.id,
+    });
+    const updatedTable = this.repo.merge(table, input);
+    return this.repo.save(updatedTable);
+  }
+
+  @Mutation(() => Table)
+  async removeTable(
+    @CurrentUser() user: User,
+    @Args('id', { type: () => ID }) id: string,
+  ) {
+    const table = await this.repo.findOneByOrFail({
+      id: id,
+      ownerId: user.id,
+    });
+
+    const result = await this.repo.delete({
+      id: id,
+      ownerId: user.id,
+    });
+    return table;
+  }
 }

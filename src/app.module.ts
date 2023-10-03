@@ -12,6 +12,8 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      includeStacktraceInErrorResponses:
+        process.env.ENVIRONMENT !== 'production',
       autoSchemaFile: join(process.cwd(), 'src/generated/schema.gql'),
     }),
     AuthModule,

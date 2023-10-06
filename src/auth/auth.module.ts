@@ -10,14 +10,15 @@ import { Account } from './account/entity/account.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { User } from 'src/users/user/entities/user.entity';
+import { Session } from './account/entity/session.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, User]),
+    TypeOrmModule.forFeature([Account, User, Session]),
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60m' },
+      signOptions: { expiresIn: '30m' },
     }),
     AccountModule,
   ],

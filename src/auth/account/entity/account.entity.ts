@@ -5,7 +5,9 @@ import {
   Column,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
+import { Session } from './session.entity';
 
 // user.entity.ts
 @Entity()
@@ -28,4 +30,7 @@ export class Account {
 
   @Column()
   userId: string;
+
+  @OneToMany(() => Session, (session) => session.account)
+  sessions: Session[];
 }

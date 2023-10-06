@@ -24,14 +24,18 @@ type User {
 
 type Query {
   myTables: [Table!]!
-  findTable(id: ID!): Table!
+  findTable(where: WhereInput!): Table!
   user(id: Int!): User!
+}
+
+input WhereInput {
+  id: ID!
 }
 
 type Mutation {
   createTable(input: CreateTableInput!): Table!
-  updateTable(id: ID!, input: UpdateTableInput!): Table!
-  removeTable(id: ID!): Table!
+  updateTable(where: WhereInput!, input: UpdateTableInput!): Table!
+  removeTable(where: WhereInput!): Table!
 }
 
 input CreateTableInput {

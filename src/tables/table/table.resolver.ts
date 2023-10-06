@@ -26,6 +26,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 // entity-not-found-graphql.error.ts
 
 import { GraphQLError } from 'graphql';
+import { WhereInput } from 'src/graphql/dto/WhereOne.input';
 
 @UseGuards(GqlAuthGuard)
 @Resolver(() => Table)
@@ -49,11 +50,8 @@ export class TableResolver {
   @Query(() => Table, {
     name: 'findTable',
   })
-  async findOne(
-    @CurrentUser() user: User,
-    @Args('id', { type: () => ID }) id: string,
-  ) {
-    return await this.repo.findOneByOrFail({ id });
+  async findOne(@CurrentUser() user: User, @Args('where') where: WhereInput) {
+    return await this.repo.findOneByOrFail(where);
   }
 
   @Mutation(() => Table)
@@ -71,11 +69,11 @@ export class TableResolver {
   @Mutation(() => Table)
   async updateTable(
     @CurrentUser() user: User,
-    @Args('id', { type: () => ID }) id: string,
+    @Args('where') where: WhereInput,
     @Args('input') input: UpdateTableInput,
   ) {
     const table = await this.repo.findOneByOrFail({
-      id: id,
+      ...where,
       ownerId: user.id,
     });
     const updatedTable = this.repo.merge(table, input);
@@ -85,15 +83,14 @@ export class TableResolver {
   @Mutation(() => Table)
   async removeTable(
     @CurrentUser() user: User,
-    @Args('id', { type: () => ID }) id: string,
+    @Args('where') where: WhereInput,
   ) {
     const table = await this.repo.findOneByOrFail({
-      id: id,
+      ...where,
       ownerId: user.id,
     });
-
     const result = await this.repo.delete({
-      id: id,
+      id: table.id,
       ownerId: user.id,
     });
     return table;

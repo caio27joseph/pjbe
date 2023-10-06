@@ -6,8 +6,9 @@ import { GraphQLGenericExceptionFilter } from './graphql/filters/graphql-excepti
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
-  const adapter = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new GraphQLGenericExceptionFilter());
+
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new GraphQLGenericExceptionFilter(httpAdapter));
 
   app.enableCors();
   await app.listen(3000);

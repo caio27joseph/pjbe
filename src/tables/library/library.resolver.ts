@@ -1,42 +1,87 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
-import { LibraryService } from './library.service';
-import { Library } from './entities/library.entity';
-import { CreateLibraryInput } from './dto/create-library.input';
-import { UpdateLibraryInput } from './dto/update-library.input';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  Subscription,
+} from '@nestjs/graphql';
 
+import { Library } from './entities/library.entity';
+
+import { Repository } from 'typeorm';
+import {
+  CreateDirectoryInput,
+  CreateLibraryInput,
+  FindTableLibrariesInput,
+  UpdateLibraryInput,
+} from './library.inputs';
+import { WhereInput } from 'src/graphql/dto/WhereOne.input';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PubSub } from 'graphql-subscriptions';
+import { UseGuards } from '@nestjs/common';
+import { GqlAuthGuard } from 'src/auth/guards/gql-jwt.guard';
+
+@UseGuards(GqlAuthGuard)
 @Resolver(() => Library)
 export class LibraryResolver {
-  constructor(private readonly libraryService: LibraryService) {}
+  private readonly pubSub: PubSub;
+  constructor(
+    @InjectRepository(Library)
+    private readonly libraryRepo: Repository<Library>,
+  ) {
+    this.pubSub = new PubSub();
+  }
 
   @Mutation(() => Library)
-  createLibrary(
-    @Args('createLibraryInput') createLibraryInput: CreateLibraryInput,
-  ) {
-    return this.libraryService.create(createLibraryInput);
-  }
-
-  @Query(() => [Library], { name: 'library' })
-  findAll() {
-    return this.libraryService.findAll();
-  }
-
-  @Query(() => Library, { name: 'library' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.libraryService.findOne(id);
+  createLibrary(@Args('input') input: CreateLibraryInput) {
+    const library = this.libraryRepo.create(input);
+    return this.libraryRepo.save(library);
   }
 
   @Mutation(() => Library)
   updateLibrary(
-    @Args('updateLibraryInput') updateLibraryInput: UpdateLibraryInput,
+    @Args('where') where: WhereInput,
+    @Args('input') input: UpdateLibraryInput,
   ) {
-    return this.libraryService.update(
-      updateLibraryInput.id,
-      updateLibraryInput,
-    );
+    const library = this.libraryRepo.findOneByOrFail(where);
+    return this.libraryRepo.save({
+      ...library,
+      ...input,
+    });
   }
 
   @Mutation(() => Library)
-  removeLibrary(@Args('id', { type: () => Int }) id: number) {
-    return this.libraryService.remove(id);
+  async addDirectory(
+    @Args('where') where: WhereInput,
+    @Args('input') input: CreateDirectoryInput,
+  ) {
+    const library = await this.libraryRepo.findOneByOrFail(where);
+    library.addDirectory(input);
+    this.pubSub.publish('directoryAdded', { directoryAdded: library });
+    return this.libraryRepo.save(library);
+  }
+
+  @Subscription((returns) => Library)
+  directoryAdded() {
+    return this.pubSub.asyncIterator('directoryAdded');
+  }
+
+  @Mutation(() => Library)
+  async removeLibrary(@Args('where') where: WhereInput) {
+    const library = await this.libraryRepo.findOneByOrFail(where);
+    return this.libraryRepo.delete({
+      id: library.id,
+    });
+  }
+
+  @Query(() => [Library])
+  async tableLibraries(@Args('where') where: FindTableLibrariesInput) {
+    return this.libraryRepo.findBy(where);
+  }
+
+  @Query(() => Library)
+  async library(@Args('where') where: WhereInput) {
+    return this.libraryRepo.findOneByOrFail(where);
   }
 }

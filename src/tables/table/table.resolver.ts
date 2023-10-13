@@ -9,8 +9,6 @@ import {
 } from '@nestjs/graphql';
 import { TableService } from './table.service';
 import { Table } from './entities/table.entity';
-import { CreateTableInput } from './dto/create-table.input';
-import { UpdateTableInput } from './dto/update-table.input';
 import {
   UseGuards,
   Request,
@@ -27,6 +25,8 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 import { GraphQLError } from 'graphql';
 import { WhereInput } from 'src/graphql/dto/WhereOne.input';
+import { CreateTableInput } from './dto/create-table.input';
+import { UpdateTableInput } from './dto/update-table.input';
 
 @UseGuards(GqlAuthGuard)
 @Resolver(() => Table)

@@ -2,24 +2,18 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { TablesModule } from './tables/tables.module';
-import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
-import { GraphQLModule } from '@nestjs/graphql';
-import { join } from 'path';
 import { UsersModule } from './users/users.module';
+import { GraphQlModule } from './graphql/graphql.module';
 
 @Module({
   imports: [
     DatabaseModule,
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      includeStacktraceInErrorResponses:
-        process.env.ENVIRONMENT !== 'production',
-      autoSchemaFile: join(process.cwd(), 'src/generated/schema.gql'),
-    }),
+    GraphQlModule,
     AuthModule,
     TablesModule,
     UsersModule,
   ],
   providers: [],
+  exports: [],
 })
 export class AppModule {}

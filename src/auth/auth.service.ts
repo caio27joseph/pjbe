@@ -110,4 +110,21 @@ export class AuthService {
   private generateRefreshToken(account: Account): string {
     return randomBytes(32).toString('hex');
   }
+  async validateTokenForSubscription(
+    jwtToken: string,
+  ): Promise<Account | null> {
+    try {
+      const payload = this.jwtService.verify(jwtToken);
+      if (payload && payload.sub) {
+        const account = await this.accountRepo.findOneBy({
+          userId: payload.sub,
+        });
+        const { password, ...result } = account;
+        return result as Account;
+      }
+    } catch (error) {
+      return null;
+    }
+    return null;
+  }
 }

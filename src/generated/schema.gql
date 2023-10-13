@@ -22,9 +22,25 @@ type User {
   myTables: [Table!]!
 }
 
+type Directory {
+  id: String!
+  name: String!
+  parentId: String
+}
+
+type Library {
+  id: ID!
+  icon: String
+  name: String!
+  table: Table!
+  root: [Directory!]!
+}
+
 type Query {
   myTables: [Table!]!
   findTable(where: WhereInput!): Table!
+  tableLibraries(where: FindTableLibrariesInput!): [Library!]!
+  library(where: WhereInput!): Library!
   user(id: Int!): User!
 }
 
@@ -32,10 +48,18 @@ input WhereInput {
   id: ID!
 }
 
+input FindTableLibrariesInput {
+  tableId: ID!
+}
+
 type Mutation {
   createTable(input: CreateTableInput!): Table!
   updateTable(where: WhereInput!, input: UpdateTableInput!): Table!
   removeTable(where: WhereInput!): Table!
+  createLibrary(input: CreateLibraryInput!): Library!
+  updateLibrary(where: WhereInput!, input: UpdateLibraryInput!): Library!
+  addDirectory(where: WhereInput!, input: CreateDirectoryInput!): Library!
+  removeLibrary(where: WhereInput!): Library!
 }
 
 input CreateTableInput {
@@ -48,4 +72,25 @@ input UpdateTableInput {
   title: String
   imageUrl: String
   description: String
+}
+
+input CreateLibraryInput {
+  icon: String
+  name: String!
+  tableId: String!
+}
+
+input UpdateLibraryInput {
+  icon: String
+  name: String
+  tableId: String
+}
+
+input CreateDirectoryInput {
+  name: String!
+  parentId: String
+}
+
+type Subscription {
+  directoryAdded: Library!
 }

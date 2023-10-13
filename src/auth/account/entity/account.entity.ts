@@ -6,6 +6,7 @@ import {
   OneToOne,
   JoinColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { Session } from './session.entity';
 
@@ -18,7 +19,7 @@ export class Account {
   @Column()
   email: string;
 
-  @Column()
+  @Column({})
   password: string;
 
   @OneToOne(() => User, {
@@ -29,6 +30,7 @@ export class Account {
   user: User;
 
   @Column()
+  @Index()
   userId: string;
 
   @OneToMany(() => Session, (session) => session.account)

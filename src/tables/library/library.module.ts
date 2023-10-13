@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { LibraryService } from './library.service';
 import { LibraryResolver } from './library.resolver';
+import { Library } from './entities/library.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  providers: [LibraryResolver, LibraryService],
+  imports: [TypeOrmModule.forFeature([Library])],
+  providers: [LibraryResolver],
 })
 export class LibraryModule {}

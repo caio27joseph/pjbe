@@ -21,6 +21,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PubSub } from 'graphql-subscriptions';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/auth/guards/gql-jwt.guard';
+import { LibraryEvent } from './library.events';
 
 @UseGuards(GqlAuthGuard)
 @Resolver(() => Library)
@@ -34,21 +35,35 @@ export class LibraryResolver {
   }
 
   @Mutation(() => Library)
-  createLibrary(@Args('input') input: CreateLibraryInput) {
-    const library = this.libraryRepo.create(input);
-    return this.libraryRepo.save(library);
+  async createLibrary(@Args('input') input: CreateLibraryInput) {
+    const entity = this.libraryRepo.create(input);
+    const library = await this.libraryRepo.save(entity);
+    this.pubSub.publish(
+      LibraryEvent.EVENT,
+      LibraryEvent.toPayload({
+        created: library,
+      }),
+    );
+    return library;
   }
 
   @Mutation(() => Library)
-  updateLibrary(
+  async updateLibrary(
     @Args('where') where: WhereInput,
     @Args('input') input: UpdateLibraryInput,
   ) {
-    const library = this.libraryRepo.findOneByOrFail(where);
-    return this.libraryRepo.save({
+    let library = await this.libraryRepo.findOneByOrFail(where);
+    library = await this.libraryRepo.save({
       ...library,
       ...input,
     });
+    this.pubSub.publish(
+      LibraryEvent.EVENT,
+      LibraryEvent.toPayload({
+        updated: library,
+      }),
+    );
+    return library;
   }
 
   @Mutation(() => Library)
@@ -58,21 +73,36 @@ export class LibraryResolver {
   ) {
     const library = await this.libraryRepo.findOneByOrFail(where);
     library.addDirectory(input);
-    this.pubSub.publish('directoryAdded', { directoryAdded: library });
+    this.pubSub.publish(
+      LibraryEvent.EVENT,
+      LibraryEvent.toPayload({
+        updated: library,
+      }),
+    );
+    console.log(library);
     return this.libraryRepo.save(library);
   }
 
-  @Subscription((returns) => Library)
-  directoryAdded() {
-    return this.pubSub.asyncIterator('directoryAdded');
+  @Subscription((returns) => LibraryEvent, {
+    name: LibraryEvent.EVENT,
+  })
+  events() {
+    return this.pubSub.asyncIterator(LibraryEvent.EVENT);
   }
 
   @Mutation(() => Library)
   async removeLibrary(@Args('where') where: WhereInput) {
     const library = await this.libraryRepo.findOneByOrFail(where);
-    return this.libraryRepo.delete({
+    this.pubSub.publish(
+      LibraryEvent.EVENT,
+      LibraryEvent.toPayload({
+        removed: library,
+      }),
+    );
+    const result = this.libraryRepo.delete({
       id: library.id,
     });
+    return library;
   }
 
   @Query(() => [Library])
@@ -81,7 +111,7 @@ export class LibraryResolver {
   }
 
   @Query(() => Library)
-  async library(@Args('where') where: WhereInput) {
+  async findLibrary(@Args('where') where: WhereInput) {
     return this.libraryRepo.findOneByOrFail(where);
   }
 }

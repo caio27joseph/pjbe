@@ -15,7 +15,7 @@ export class Directory {
 
   @Field() name: string;
 
-  @Field({ nullable: true }) parentId: string;
+  @Field({ nullable: true }) parentId?: string;
 }
 
 @ObjectType()
@@ -40,8 +40,10 @@ export class Library {
   })
   name: string;
 
-  @Field()
-  @ManyToOne(() => Table)
+  @Field(() => Table)
+  @ManyToOne(() => Table, (table) => table.libraries, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   table: Table;
 

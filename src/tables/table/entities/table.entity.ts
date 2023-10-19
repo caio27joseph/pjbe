@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import { Library } from 'src/tables/library/entities/library.entity';
 import { User } from 'src/users/user/entities/user.entity';
 import {
   Column,
@@ -7,6 +8,7 @@ import {
   JoinColumn,
   JoinTable,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -47,6 +49,11 @@ export class Table {
   @Field(() => ID)
   @Column()
   ownerId: string;
+
+  @OneToMany(() => Library, (library) => library.table, {
+    cascade: true,
+  })
+  libraries: Library[];
 
   @Field()
   @CreateDateColumn()

@@ -2,6 +2,20 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Directory {
+  id: String!
+  name: String!
+  parentId: String
+}
+
+type Library {
+  id: ID!
+  icon: String
+  name: String!
+  table: Table!
+  root: [Directory!]!
+}
+
 type Table {
   id: String!
   title: String!
@@ -22,25 +36,17 @@ type User {
   myTables: [Table!]!
 }
 
-type Directory {
-  id: String!
-  name: String!
-  parentId: String
-}
-
-type Library {
-  id: ID!
-  icon: String
-  name: String!
-  table: Table!
-  root: [Directory!]!
+type LibraryEvent {
+  updated: Library
+  removed: Library
+  created: Library
 }
 
 type Query {
   myTables: [Table!]!
   findTable(where: WhereInput!): Table!
   tableLibraries(where: FindTableLibrariesInput!): [Library!]!
-  library(where: WhereInput!): Library!
+  findLibrary(where: WhereInput!): Library!
   user(id: Int!): User!
 }
 
@@ -92,5 +98,5 @@ input CreateDirectoryInput {
 }
 
 type Subscription {
-  directoryAdded: Library!
+  libraryEvent: LibraryEvent!
 }

@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import { Article } from 'src/tables/articles/entities/article.entity';
 import { Table } from 'src/tables/table/entities/table.entity';
 import {
   Column,
@@ -6,6 +7,7 @@ import {
   EntityNotFoundError,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
@@ -56,6 +58,10 @@ export class Library {
     default: [],
   })
   root: Directory[];
+
+  @Field(() => [Article])
+  @OneToMany(() => Article, (article) => article.library)
+  articles: Promise<Article[]>;
 
   addDirectory({ parentId, name }: { parentId?: string; name: string }) {
     if (parentId) {
